@@ -38,7 +38,7 @@ LP.1 <- make.lp(
 ```
 
 
-# Step 2
+## Step 2
 
 Add constraints
 
@@ -102,8 +102,10 @@ Solve the problem
 ```{r}
 result <- solve(LP.1)
 
-result # Result = 0, which means "Optimal solution found"
+result
 ```
+
+We get a `0` which indicates an *optimal solution was found*. 
 
 
 ## Step 7
@@ -113,9 +115,17 @@ Get the solution
 ```{r}
 get.objective(LP.1)
 
-# 700 was the maximized output of the objective function
-
-get.variables(LP.1)
-
-# 700 was produced with values of c(100, 200), inputs for "Product A" & "Product B" respectively
 ```
+
+700 was the maximized output of the objective function.
+
+
+```{r}
+get.variables(LP.1)
+```
+
+700 was produced with values of c(100, 200), inputs for "Product A" & "Product B" respectively.
+
+# Interpretations
+
+It's all well and good to find an optimal solution, but ideally we advance to the point where we can interpret the inputs as "binding" or "slack".
