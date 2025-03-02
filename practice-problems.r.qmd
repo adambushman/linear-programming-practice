@@ -1,0 +1,328 @@
+---
+title: "Linear Programming | Practice Problems"
+author: "Adam Bushman"
+date: "3/1/2025"
+output:
+    html:
+        toc: true
+        embed-resources: true
+editor:
+    render-on-save: true
+---
+
+
+## Intro
+
+These are practice problems for linear programming in R.
+
+
+## Packages
+
+```{r}
+# install.packages('lpSolve')
+# install.packages('lpSolveAPI')
+
+library('lpSolve')
+library('lpSolveAPI')
+```
+
+
+## Helpers
+
+A helper function for displaying a constraint sensitivity table:
+
+```{r}
+fmt_rhs_sensitivity <- function(obj, names) {
+  obj$names = names
+  tabl <- as.data.frame(obj)[,c(4,1,2,3)]
+  colnames(tabl) <- c('Constraint', 'Shadow.Price', 'RangeMin', 'RangeMax')
+  print(tabl)
+}
+```
+
+```{r}
+fmt_obj_sensitivity <- function(obj, names) {
+  obj$names = names
+  tabl <- as.data.frame(obj)[,c(3,1,2)]
+  colnames(tabl) <- c('Coefficient', 'RangeMin', 'RangeMax')
+  print(tabl)
+}
+```
+
+
+## Problem 1
+
+
+![](/img/problem-01.png)
+
+
+---
+
+
+### Formulation
+
+#### Decision Variables
+
+$$
+\begin{align}
+C = \text{Cologne} \\
+P = \text{Perfume}
+\end{align}
+$$
+
+
+#### Objective Function
+
+$$ 
+\begin{align}
+3C + 8P = \text{Dollars of Reveune | To maximize}
+\end{align}
+$$
+
+#### Constraints
+
+$$
+\begin{align}
+2C + 4P <= 1600 \text{ | fragrance} \\
+6C + 2P <= 1800 \text{ | intensifier} \\
+0C + 1P <= 350 \text{ | stabilizer} \\
+C >= 0 \\
+P >= 0
+\end{align}
+$$
+
+
+### Solution
+
+```{r}
+LP.1 <- make.lp(
+  0   # Number of constraints
+  ,2  # Number of decision variables
+)
+```
+
+Add constraints
+
+```{r}
+add.constraint(
+  LP.1  # The linear programming object
+  ,c(2,4) # The coefficients for decision variables above
+  ,"<=" # The type of operator for the constraint
+  ,1600 # The constant on the right side of the constraint
+)
+
+add.constraint(LP.1, c(6,2), "<=", 1800)
+add.constraint(LP.1, c(0,1), "<=", 350)
+```
+
+Define objective function
+
+```{r}
+#| output: false
+
+set.objfn(
+  LP.1 # Our LP object
+  ,c(3,8) # The objectie function coefficients
+)
+
+lp.control(
+  LP.1 # Our LP object
+  ,sense = "max" # The goal is to "maximize"
+)
+```
+
+Set names for interpretability
+
+```{r}
+cnames <- c("Cologne", "Perfume")
+rnames <- c("Fragrance", "Intensifier", "Stabilizer", cnames)
+```
+
+
+Describe the setup
+
+```{r}
+print(LP.1)
+```
+
+This all looks correct.
+
+Solve the problem
+
+```{r}
+solve(LP.1)
+```
+
+We get a `0` which indicates an *optimal solution was found*. 
+
+Let's now see the solution
+
+```{r}
+get.objective(LP.1)
+
+```
+
+3100 is the revenue maximized from the objective function.
+
+```{r}
+get.variables(LP.1)
+```
+
+The optimal solution is to produce 100 units of cologne and 350 units of perfume.
+
+We can now do the sensitivity analysis!
+
+We can interpret the sensitivity for constraints:
+
+```{r}
+cs.1 <- get.sensitivity.rhs(LP.1)
+fmt_rhs_sensitivity(cs.1, rnames)
+```
+
+So long as a change in each of the constraints stays within the bounds, each unit change has a $X increase on the optimal solution.
+
+We can interpret the sensitivity for the objective function constraints:
+
+```{r}
+objs.1 <- get.sensitivity.obj(LP.1)
+fmt_obj_sensitivity(objs.1, cnames)
+```
+
+The optimal solution will remain the same so long as the *Cologne* coefficient is between `0` or `4`, or the *Perfume* coefficient is between `6` and `Inf`.
+
+**HOWEVER**, any change in these coefficients will change the optimal solution value, even if the inputs were the same.
+
+
+## Problem 2
+
+
+![](/img/problem-02.png)
+
+
+---
+
+
+### Formulation
+
+#### Decision Variables
+
+$$
+\begin{align}
+A = \text{Type A} \\
+H = \text{Type H}
+\end{align}
+$$
+
+
+#### Objective Function
+
+$$ 
+\begin{align}
+350000A + 300000H = \text{Dollars of Profit | To maximize}
+\end{align}
+$$
+
+#### Constraints
+
+$$
+\begin{align}
+12A + 16H <= 2880 \text{ | Premium glass per day} \\
+9A + 6H <= 1566 \text{ | Available labor per day} \\
+A + H <= 200 \text{million | Max fiber-optic glass per day} \\
+A >= 0 \\
+H >= 0
+\end{align}
+$$
+
+
+### Solution
+
+```{r}
+LP.2 <- make.lp(0,2)
+```
+
+Add constraints
+
+```{r}
+add.constraint(LP.2, c(12,16), "<=", 2880)
+add.constraint(LP.2, c(9,6), "<=", 1566)
+add.constraint(LP.2, c(1,1), "<=", 200) # 200 million
+```
+
+Define objective function
+
+```{r}
+#| output: false
+
+set.objfn(
+  LP.2 # Our LP object
+  ,c(350000,300000) # The objectie function coefficients
+)
+
+lp.control(
+  LP.2 # Our LP object
+  ,sense = "max" # The goal is to "maximize"
+)
+```
+
+Set names for interpretability
+
+```{r}
+cnames <- c("Type A", "Type H")
+rnames <- c("Premium Glass", "Available Labor", "Max Cabling", cnames)
+```
+
+
+Describe the setup
+
+```{r}
+print(LP.2)
+```
+
+This all looks correct.
+
+Solve the problem
+
+```{r}
+solve(LP.2)
+```
+
+We get a `0` which indicates an *optimal solution was found*. 
+
+Let's now see the solution
+
+```{r}
+get.objective(LP.2)
+
+```
+
+`661,000,000` is the total profit maximized from the objective function.
+
+```{r}
+get.variables(LP.2)
+```
+
+The optimal solution is to produce 122 million units of Type A and 78 units of Type B.
+
+We can now do the sensitivity analysis!
+
+We can interpret the sensitivity for constraints:
+
+```{r}
+cs.2 <- get.sensitivity.rhs(LP.2)
+fmt_rhs_sensitivity(cs.2, rnames)
+```
+
+Only *Available Labor* and *Max Cabling* are binding constraints. 
+
+We can interpret the sensitivity for the objective function constraints:
+
+```{r}
+objs.2 <- get.sensitivity.obj(LP.2)
+fmt_obj_sensitivity(objs.2, cnames)
+```
+
+The optimal solution will remain the same so long as these coefficients remain in the range.
+
+**HOWEVER**, any change in these coefficients will change the optimal solution value, even if the inputs were the same.
+
