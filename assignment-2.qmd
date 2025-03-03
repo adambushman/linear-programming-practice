@@ -1,0 +1,212 @@
+---
+title: "Assignment 2"
+author: "Adam Bushman"
+date: "2/25/2025"
+format: 
+    html:
+        theme: simplex
+        toc: true
+        embed-resources: true
+editor:
+    render-on-save: true
+---
+
+
+## Setup
+
+
+## Packages
+
+```{r}
+# install.packages('lpSolve')
+# install.packages('lpSolveAPI')
+
+library('lpSolve')
+library('lpSolveAPI')
+```
+
+
+
+## Problem Set #1
+
+Set up an LP object
+
+```{r}
+LP.1 <- make.lp(
+  0   # Number of constraints
+  ,2  # Number of decision variables
+)
+```
+
+Add constraints
+
+```{r}
+add.constraint(LP.1, c(0,0.4), "<=", 60) # Roast Beef
+add.constraint(LP.1, c(0.25,0.25), "<=", 200) # Tuna Salad
+add.constraint(LP.1, c(0.5,0), "<=", 260) # Turkey 
+add.constraint(LP.1, c(2,1), "<=", 60*25) # Rye Bread
+add.constraint(LP.1, c(1,1), "<=", 32*25) # Pumpernickel Bread
+```
+
+Create unpward/lower bounds
+
+```{r}
+set.bounds(
+  LP.1 # Out LP object
+  ,lower = c(0,0) # Minimum zero (0) sandwiches made of each type
+)
+```
+
+Define objective function
+
+```{r}
+set.objfn(
+  LP.1 # Our LP object
+  ,c(6.95,5.50) # The objectie function coefficients
+)
+
+lp.control(
+  LP.1 # Our LP object
+  ,sense = "max" # The goal is to "maximize"
+)
+```
+
+Set names for interpretability
+
+```{r}
+cnames <- c("Fish_n_Fowl", "Surf_n_Turf")
+rnames <- c("Roast Beef", "Tuna Salad", "Turkey", "Rye Bread", "Pumpernickel Bread")
+```
+
+Solve the problem
+
+```{r}
+result <- solve(LP.1)
+
+result
+```
+
+We get a `0` which indicates an *optimal solution was found*. 
+
+Show solution
+
+```{r}
+get.objective(LP.1)
+```
+
+`$4,439` is the optimized daily revenue (optimal solution).
+
+
+```{r}
+get.variables(LP.1)
+```
+
+The optimal solution recommends *Delectation* makes:
+
+`520` *Fish-n-Fowl* sandwiches and `150` *Surf-n-Turf* sandwiches
+
+
+Let's evaluate the sensitivity of the constraints:
+
+```{r}
+get.sensitivity.rhs(LP.1)
+```
+
+And the sensitivity of the objective function:
+
+```{r}
+get.sensitivity.obj(LP.1)
+```
+
+
+
+## Problem Set #2
+
+Set up an LP object
+
+```{r}
+LP.2 <- make.lp(
+  0   # Number of constraints
+  ,9  # Number of decision variables
+)
+```
+
+Add constraints
+
+```{r}
+add.constraint(LP.2, c(1,0,0,1,0,0,1,0,0), ">=", 3000) # Q1 production
+add.constraint(LP.2, c(0,1,0,0,1,0,0,1,0), ">=", 2000) # Q2 production
+add.constraint(LP.2, c(0,0,1,0,0,1,0,0,1), ">=", 4000) # Q3 production
+
+add.constraint(LP.2, c(0,0,0,0,0,0,1,0,0), "=", 1000) # Q1 inventory
+
+add.constraint(LP.2, c(0.72,0,0,0.72,0,0,1,1,0), ">=", 3000) # Q1 Inventory dynamics
+add.constraint(LP.2, c(0,0.72,0,0,0.72,0,0,1,1), ">=", 2000) # Q2 Inventory dynamics
+
+add.constraint(LP.2, c(1,1,1,0,0,0,0,0,0), "<=", 2700) # Regular time limits
+```
+
+Create unpward/lower bounds
+
+```{r}
+# set.bounds(
+#   LP.2 # Out LP object
+#   ,lower = c(0,0) # Minimum zero (0) sandwiches made of each type
+# )
+```
+
+Define objective function
+
+```{r}
+set.objfn(
+  LP.2 # Our LP object
+  ,c(40,40,40,60,60,60,15,15,15) # The objectie function coefficients
+)
+
+lp.control(
+  LP.2 # Our LP object
+  ,sense = "min" # The goal is to "minimize"
+)
+```
+
+Set names for interpretability
+
+```{r}
+cnames <- c("Q1", "Q2", "Q3")
+rnames <- c("R1", "R2", "R3", "O1", "O2", "O3", "I1", "I2", "I3")
+```
+
+Solve the problem
+
+```{r}
+result <- solve(LP.2)
+
+result
+```
+
+We get a `0` which indicates an *optimal solution was found*. 
+
+Show solution
+
+```{r}
+get.objective(LP.2)
+```
+
+
+```{r}
+get.variables(LP.2)
+```
+
+
+
+Let's evaluate the sensitivity of the constraints:
+
+```{r}
+get.sensitivity.rhs(LP.1)
+```
+
+And the sensitivity of the objective function:
+
+```{r}
+get.sensitivity.obj(LP.1)
+```
