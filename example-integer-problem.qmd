@@ -1,0 +1,248 @@
+---
+title: "Linear Programming | Integer Problem"
+author: "Adam Bushman"
+date: "2/24/2025"
+output:
+    html:
+        toc: true
+        embed-resources: true
+---
+
+
+## Intro
+
+The logic and functions were built in C++. The below packages are a wrapper for R.
+
+
+## Packages
+
+```{r}
+# install.packages('lpSolve')
+# install.packages('lpSolveAPI')
+
+library('lpSolve')
+library('lpSolveAPI')
+```
+
+
+![](img/problem-03.png)
+
+
+## Step 1
+
+Set up an LP object
+
+```{r}
+LP.1 <- make.lp(
+  0   # Number of constraints
+  ,6  # Number of decision variables
+)
+```
+
+
+## Step 2
+
+Add constraints
+
+```{r}
+add.constraint(
+  LP.1  # The linear programming object
+  ,c(75,90,60,30,100,50) # The coefficients for decision variables above
+  ,"<=" # The type of operator for the constraint
+  ,250 # The constant on the right side of the constraint
+)
+
+add.constraint(LP.1, c(25,35,15,20,25,20), "<=", 75)
+add.constraint(LP.1, c(20,0,15,10,20,10), "<=", 50)
+```
+
+
+## Step 3
+
+Create unpward/lower bounds
+
+```{r}
+# set.bounds(
+#   LP.1 # Out LP object
+#   ,lower = c(0,0) # The lower bounds for each coefficient
+# )
+```
+
+
+
+## Step 4
+
+Define objective function
+
+```{r}
+set.objfn(
+  LP.1 # Our LP object
+  ,c(141,187,121,83,265,127) # The objectie function coefficients
+)
+
+set.type(LP.1, c(1:6), "binary") # Define as binary; could also say "integer"
+
+lp.control(
+  LP.1 # Our LP object
+  ,sense = "max" # The goal is to "maximize"
+)
+```
+
+
+## Step 5
+
+Set names for interpretability
+
+```{r}
+cnames <- paste("Project", c("A", "B", "C", "D", "E", "F"))
+rnames <- paste("Year", c(1:3))
+```
+
+
+## Step 6
+
+Solve the problem
+
+```{r}
+result <- solve(LP.1)
+
+result
+```
+
+We get a `0` which indicates an *optimal solution was found*. 
+
+
+## Step 7
+
+Get the solution
+
+```{r}
+get.objective(LP.1)
+
+```
+
+573 is the maximized output of the objective function.
+
+
+```{r}
+get.variables(LP.1)
+```
+
+This means we should onboard projects 2, 3, and 5.
+
+
+# Interpretations
+
+It's all well and good to find an optimal solution, but ideally we advance to the point where we can interpret the inputs as "binding" or "slack".
+
+
+# Problem #2
+
+![](img/problem-04.png)
+
+
+## Step 1
+
+Set up an LP object
+
+```{r}
+LP.2 <- make.lp(
+  0   # Number of constraints
+  ,6  # Number of decision variables
+)
+```
+
+
+## Step 2
+
+Add constraints
+
+```{r}
+add.constraint(
+  LP.2  # The linear programming object
+  ,c(2,1,6,0,0,0) # The coefficients for decision variables above
+  ,"<=" # The type of operator for the constraint
+  ,2000 # The constant on the right side of the constraint
+)
+
+add.constraint(LP.2, c(3,2.5,4,0,0,0), "<=", 2500)
+
+add.constraint(LP.2, c(1,0,0,-10000,0,0), "<=", 0)
+add.constraint(LP.2, c(0,1,0,0,-10000,0), "<=", 0)
+add.constraint(LP.2, c(0,0,1,0,0,-10000), "<=", 0)
+```
+
+
+## Step 3
+
+Create unpward/lower bounds
+
+```{r}
+# set.bounds(
+#   LP.2 # Out LP object
+#   ,lower = c(0,0) # The lower bounds for each coefficient
+# )
+```
+
+
+
+## Step 4
+
+Define objective function
+
+```{r}
+set.objfn(
+  LP.2 # Our LP object
+  ,c(15,10,20,-1500,-1200,-1600) # The objective function coefficients
+)
+
+set.type(LP.2, c(1:3), "integer")
+set.type(LP.2, c(4:6), "binary") # Define as binary; could also say "integer"
+
+lp.control(
+  LP.2 # Our LP object
+  ,sense = "max" # The goal is to "maximize"
+)
+```
+
+
+## Step 5
+
+Set names for interpretability
+
+```{r}
+rnames <- c("Shirts", "Shorts", "Pants")
+cnames <- c(paste("Vol -", rnames), paste("Prod -", rnames))
+```
+
+
+## Step 6
+
+Solve the problem
+
+```{r}
+result <- solve(LP.2)
+
+result
+```
+
+We get a `0` which indicates an *optimal solution was found*. 
+
+
+## Step 7
+
+Get the solution
+
+```{r}
+get.objective(LP.2)
+
+```
+
+10,995 is the maximized output of the objective function.
+
+
+```{r}
+get.variables(LP.2)
+```
+
+We should only produce shirts, at 833

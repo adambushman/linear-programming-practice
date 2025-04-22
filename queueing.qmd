@@ -1,0 +1,65 @@
+---
+title: "Queuing Problems in R"
+author: "Adam Bushman"
+---
+
+## Queueing models
+
+```{r}
+library(queueing)
+library(tidyverse)
+
+input <-NewInput.MM1(lambda=25,mu=30,n=10)
+output <- QueueingModel(input)
+
+r <- NULL
+Ls <-NULL
+# to see the impact of high utilitization on wait times in the system
+for (l in 1:29) {
+  input <-NewInput.MM1(lambda=l,mu=30,n=10)
+  output <- QueueingModel(input)
+  r[l] <- output$RO
+  Ls[l] <- output$L
+}
+
+
+ggplot() +
+  geom_point(aes(x=r,y=Ls)) +
+  xlab("Utilization") +
+  ylab("Waiting time in system")
+
+
+
+
+r<- matrix(NA,nrow=29,ncol = 4)
+Ls <-matrix(NA,nrow=29,ncol = 4)
+
+
+# to see the impact of more servers on wait times in the system
+for (l in 1:29) {
+  for (k in 1:4) {
+    input <-NewInput.MMC(lambda=l,mu=30,n=10,c=k)
+    output <- QueueingModel(input)
+    r[l,k] <- output$RO
+    Ls[l,k] <- output$L
+  }
+}
+
+
+ggplot() +
+  geom_point(aes(x=r[,1],y=Ls[,1])) +
+    geom_point(aes(x=r[,1],y=Ls[,2]),color ="red") +
+    geom_point(aes(x=r[,1],y=Ls[,3]),color ="blue") +
+    geom_point(aes(x=r[,1],y=Ls[,4]),color = "green") +
+  xlab("Utilization") +
+  ylab("Waiting time in system")
+
+```
+
+The average arrival rate to the emergency room of Queen Elizabeth Hospital is 5.9 patients per hour. Average time spent by a doctor with a patient is 29 minutes. The Hospital Authority wants the average waiting time to be no more than 15 minutes. What is the minimum number of doctors in the emergency room?
+
+```{r} 
+l <- 5.9
+m <- 60/29
+
+```
